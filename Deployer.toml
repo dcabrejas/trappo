@@ -1,0 +1,4 @@
+[staging]
+host = "wnj"
+deploy-path = "/home/whynotja"
+keep-releases = 3
