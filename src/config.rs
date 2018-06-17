@@ -2,11 +2,11 @@ use std::fs::File;
 use std::io::prelude::*;
 use toml_edit::Document;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct HostConfig {
-    host: String,
-    deploy_path: String,
-    keep_releases: i8
+    pub host: String,
+    pub deploy_path: String,
+    pub keep_releases: i8
 }
 
 pub fn parse_config_file() -> Result<HostConfig, &'static str> {

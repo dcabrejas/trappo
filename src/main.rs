@@ -1,20 +1,25 @@
 extern crate toml_edit;
+extern crate ansi_term;
 
 mod config;
 mod recipe;
+mod display;
 
 use std::env;
 use config::*;
-use recipe::*;
+use recipe::{Recipe, RecipeExecutor};
+use recipe::steps::{Step, Context};
+use recipe::steps::core::get_steps;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     let host_config =  parse_config_file().unwrap();
-    //todo pass host_config by ref and reuse it for every step
-    let steps: Vec<recipe::SayHiStep> = recipe::get_steps(host_config);
+    let context = Context::from_host_config(host_config);
 
-    //execute the steps
-    for step in steps.iter() {
-        step.execute();
-    }
+    let recipe = Recipe {
+        name: "My first recipe".to_string(),
+        steps: get_steps()
+    };
+
+    RecipeExecutor::execute(&recipe, &context);
 }

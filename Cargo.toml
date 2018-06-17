@@ -5,3 +5,4 @@ authors = ["Diego Cabrejas <dcabrejas@icloud.com>"]
 
 [dependencies]
 toml_edit = "0.1.2"
+ansi_term = "0.11.0"

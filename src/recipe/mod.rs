@@ -1,28 +1,25 @@
-use super::config::HostConfig;
+pub mod steps;
 
-pub trait Step {
-    fn new(name: &'static str, config: HostConfig) -> Self;
-    fn execute(&self) -> Result<(), &str>;
+use self::steps::{Step, Context};
+use super::display::*;
+
+pub struct Recipe {
+    pub name : String,
+    pub steps: Vec<Box<Step>>
 }
 
-pub struct SayHiStep { name: &'static str, config: HostConfig }
+pub struct RecipeExecutor;
 
-impl Step for SayHiStep {
-    fn new(name: &'static str, config: HostConfig) -> SayHiStep {
-        Self { name, config }
+impl RecipeExecutor {
+
+    pub fn execute(recipe: &Recipe, context: &Context) -> () {
+
+        render_success(&format!("🚀  Deploying to {} using '{}' recipe...", context.config.host, recipe.name));
+
+        for step in recipe.steps.iter() {
+            render_success(&format!("➜  Executing step {}...", step.get_name()));
+            step.execute(context);
+            render_success(&format!("🗸  Step {} executed successfully", step.get_name()));
+        }
     }
-
-    fn execute (&self) -> Result<(), &str> {
-        println!("Hello World!");
-        Ok(())
-    }
-}
-
-pub fn get_steps(config: HostConfig) -> Vec<SayHiStep>{
-
-    let hi_step = SayHiStep::new("hi", config);
-
-    let mut steps = Vec::new();
-    steps.push(hi_step);
-    steps
 }
