@@ -8,11 +8,11 @@ mod display;
 use std::env;
 use config::*;
 use recipe::{Recipe, RecipeExecutor};
-use recipe::steps::{Step, Context};
+use recipe::steps::Context;
 use recipe::steps::core::get_steps;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let _args: Vec<String> = env::args().collect();
     let host_config =  parse_config_file().unwrap();
     let context = Context::from_host_config(host_config);
 

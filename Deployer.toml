@@ -1,4 +1,6 @@
 [staging]
-host = "wnj"
-deploy-path = "/tmp/___deployer"
+
+host          = "wnj"
+deploy-path   = "/tmp/___deployer"
 keep-releases = 3
+repo-url      = "git@github.com:dcabrejas/whynotjapanese.git"
