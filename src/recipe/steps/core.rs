@@ -37,16 +37,18 @@ impl Step for GitClone {
 
     fn execute (&self, context: &Context) -> Result<(), &str> {
         let server_command = format!(
-            "cd {} && git clone {} .",
+            "git clone {} {}",
+            context.config.repo_url.trim(),
             context.release_path.trim(),
-            context.config.repo_url.trim()
         );
 
-        let _output = Command::new("ssh")
+        let mut cmd = Command::new("ssh")
             .args(&[&context.config.host, server_command.as_str()])
-            .stdout(Stdio::piped())
-            .output()
+            .stdout(Stdio::inherit())
+            .spawn()
             .expect("Failed to execute git clone step");
+
+        let status = cmd.wait();
 
         Ok(())
     }
@@ -70,11 +72,13 @@ impl Step for ComposerInstall {
             context.release_path.trim()
         );
 
-        let _output = Command::new("ssh")
+        let mut cmd = Command::new("ssh")
             .args(&[&context.config.host, server_command.as_str()])
-            .stdout(Stdio::piped())
-            .output()
+            .stdout(Stdio::inherit())
+            .spawn()
             .expect("Failed to execute composer install command step");
+
+        let status = cmd.wait();
 
         Ok(())
     }
