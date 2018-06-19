@@ -1,4 +1,4 @@
-use super::super::config::HostConfig;
+use config::HostConfig;
 use std::process::Command;
 use std::io::{Error, ErrorKind};
 

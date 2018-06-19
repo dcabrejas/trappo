@@ -1,6 +1,10 @@
+use std;
 use std::fs::File;
 use std::io::prelude::*;
 use toml_edit::Document;
+
+type GenError = Box<std::error::Error>;
+type GenResult<T> = Result<T, GenError>;
 
 #[derive(Debug, Clone)]
 pub struct HostConfig {
@@ -10,14 +14,13 @@ pub struct HostConfig {
     pub repo_url: String,
 }
 
-pub fn parse_config_file() -> Result<HostConfig, &'static str> {
-    let mut file = File::open("Deployer.toml")
-        .expect("Failed to read configuration file");
+pub fn parse_config_file() -> GenResult<HostConfig> {
+    let mut file = File::open("Deployer.toml")?;
 
     let mut contents = String::new();
-    file.read_to_string(&mut contents).unwrap();
+    file.read_to_string(&mut contents)?;
 
-    let doc = contents.parse::<Document>().expect("invalid doc");
+    let doc = contents.parse::<Document>()?;
     let host_table = doc["staging"].as_table().unwrap();
 
     let host = String::from(host_table.get("host").unwrap().as_str().unwrap());
