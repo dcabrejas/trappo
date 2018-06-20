@@ -1,10 +1,8 @@
-use std;
 use std::fs::File;
 use std::io::prelude::*;
-use toml_edit::Document;
+use toml_edit::{Document, Table};
 
-type GenError = Box<std::error::Error>;
-type GenResult<T> = Result<T, GenError>;
+pub mod error;
 
 #[derive(Debug, Clone)]
 pub struct HostConfig {
@@ -14,19 +12,67 @@ pub struct HostConfig {
     pub repo_url: String,
 }
 
-pub fn parse_config_file() -> GenResult<HostConfig> {
-    let mut file = File::open("Deployer.toml")?;
+pub struct ConfigParser;
 
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)?;
+impl ConfigParser {
 
-    let doc = contents.parse::<Document>()?;
-    let host_table = doc["staging"].as_table().unwrap();
+    pub fn parse_config_file(file_name: &str, stage: &str) -> Result<HostConfig, error::ParseError> {
+        let mut file = File::open(file_name)?;
 
-    let host = String::from(host_table.get("host").unwrap().as_str().unwrap());
-    let deploy_path = String::from(host_table.get("deploy-path").unwrap().as_str().unwrap());
-    let keep_releases = host_table.get("keep-releases").unwrap().as_integer().unwrap() as i8;
-    let repo_url = String::from(host_table.get("repo-url").unwrap().as_str().unwrap());
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)?;
 
-    Ok(HostConfig { host, deploy_path, keep_releases, repo_url})
+        let doc = contents.parse::<Document>().unwrap();
+        let host_table = match doc[stage].as_table() {
+            Some(host_table) => host_table,
+            None => {
+                return Err(error::ParseError::new("Error parsing host table".into()))
+            }
+        };
+
+        Ok(
+            HostConfig {
+                host: ConfigParser::get_from_table_as_string("host", &host_table)?,
+                deploy_path: ConfigParser::get_from_table_as_string("deploy-path", &host_table)?,
+                keep_releases: ConfigParser::get_from_table_as_integer("keep-releases", &host_table)? as i8,
+                repo_url: ConfigParser::get_from_table_as_string("repo-url", &host_table)?
+            }
+        )
+    }
+
+    fn get_from_table_as_string(key: &str, table: &Table) -> Result<String, error::ParseError> {
+        let value = match table.get(key) {
+            Some(value) => match value.as_str() {
+                Some(value) => value,
+                None => {
+                    let error = format!("Error parsing {} from config file", key);
+                    return Err(error::ParseError::new(error))
+                }
+            },
+            None => {
+                let error = format!("{} value not found in config file", key);
+                return Err(error::ParseError::new(error))
+            }
+        };
+
+        Ok(value.into())
+    }
+
+    fn get_from_table_as_integer(key: &str, table: &Table) -> Result<i64, error::ParseError> {
+        let value = match table.get(key) {
+            Some(value) => match value.as_integer() {
+                Some(value) => value,
+                None => {
+                    let error = format!("Error parsing {} from config file", key);
+                    return Err(error::ParseError::new(error))
+                }
+            },
+            None => {
+                let error = format!("{} value not found in config file", key);
+                return Err(error::ParseError::new(error))
+            }
+        };
+
+        Ok(value)
+    }
 }

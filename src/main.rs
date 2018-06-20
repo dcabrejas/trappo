@@ -16,7 +16,13 @@ use std::error::Error;
 fn main() {
     let _args: Vec<String> = env::args().collect();
 
-    let host_config =  parse_config_file().unwrap();
+    let host_config =  match ConfigParser::parse_config_file("Deployer.toml", "staging") {
+        Ok(context) => context,
+        Err(message) => {
+            eprintln!("error: {:?}", message.description());
+            exit(1);
+        }
+    };
 
     let context = match Context::from_host_config(host_config) {
         Ok(context) => context,

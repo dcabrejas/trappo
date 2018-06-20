@@ -94,7 +94,7 @@ pub fn get_steps() -> Vec<Box<Step>>{
     let git_clone = GitClone::new("git:clone");
     let composer_install = ComposerInstall::new("composer:install");
 
-    let mut steps: Vec<Box<Step>> = vec![
+    let steps: Vec<Box<Step>> = vec![
         Box::new(core_setup),
         Box::new(git_clone),
         Box::new(composer_install),
