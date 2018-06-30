@@ -4,19 +4,19 @@ extern crate ansi_term;
 mod config;
 mod recipe;
 mod display;
+mod cmd;
 
 use std::env;
-use config::*;
+use config::parse_config_file;
 use recipe::{Recipe, RecipeExecutor};
-use recipe::steps::Context;
-use recipe::steps::core::get_steps;
+use recipe::steps::*;
 use std::process::exit;
 use std::error::Error;
 
 fn main() {
     let _args: Vec<String> = env::args().collect();
 
-    let host_config =  match ConfigParser::parse_config_file("Deployer.toml", "staging") {
+    let host_config =  match parse_config_file("Deployer.toml", "staging") {
         Ok(context) => context,
         Err(message) => {
             eprintln!("error: {:?}", message.description());

@@ -1,6 +1,7 @@
 [staging]
-
-host          = "wnj"
-deploy-path   = "/tmp/___deployer"
-keep-releases = 3
-repo-url      = "git@github.com:dcabrejas/whynotjapanese.git"
+host            = "wnj"
+deploy-path     = "/tmp/___deployer"
+keep-releases   = 3
+repo-url        = "git@github.com:dcabrejas/whynotjapanese.git"
+linked_files    = ['public/example.rs', 'public/magic.rs']
+linked_dirs     = ['media']

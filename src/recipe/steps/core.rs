@@ -1,5 +1,6 @@
-use std::process::{Command, Stdio};
 use super::{Step, Context};
+use super::error::*;
+use super::super::super::cmd::*;
 
 pub struct SetUpStep { name: &'static str }
 
@@ -8,16 +9,13 @@ impl Step for SetUpStep {
         Self { name }
     }
 
-    fn execute (&self, context: &Context) -> Result<(), &str> {
+    fn execute (&self, context: &Context) -> Result<(), StepError> {
         let server_command = format!(
             "mkdir -p {}",
             context.release_path
         );
 
-        let _output = Command::new("ssh")
-            .args(&[&context.config.host, server_command.as_str()])
-            .output()
-            .expect("Failed to execute set up step");
+        let _output = exec_remote_cmd(&context.config.host,&server_command)?;
 
         Ok(())
     }
@@ -27,28 +25,27 @@ impl Step for SetUpStep {
     }
 }
 
-pub struct GitClone { name: &'static str }
+pub struct LinkFiles { name: &'static str }
 
-impl Step for GitClone {
+impl Step for LinkFiles {
 
-    fn new(name: &'static str) -> GitClone {
+    fn new(name: &'static str) -> LinkFiles {
         Self { name }
     }
 
-    fn execute (&self, context: &Context) -> Result<(), &str> {
-        let server_command = format!(
-            "git clone {} {}",
-            context.config.repo_url.trim(),
-            context.release_path.trim(),
-        );
+    fn execute (&self, context: &Context) -> Result<(), StepError> {
 
-        let mut cmd = Command::new("ssh")
-            .args(&[&context.config.host, server_command.as_str()])
-            .stdout(Stdio::inherit())
-            .spawn()
-            .expect("Failed to execute git clone step");
+        for file in context.config.link_files.iter() {
+            let shared_file_path = format!("{}/{}", context.shared_path, file);
+            let symlink_path     = format!("{}/{}", context.release_path.trim(), file);
 
-        let status = cmd.wait();
+            //check if shared file exists, otherwise return error
+            exec_remote_file_exists(&context.config.host, &shared_file_path, FSResourceType::File)?;
+
+            let symlink_command = format!("ln -s {} {}",shared_file_path, symlink_path);
+
+            exec_remote_cmd(&context.config.host, &symlink_command)?;
+        }
 
         Ok(())
     }
@@ -58,27 +55,27 @@ impl Step for GitClone {
     }
 }
 
-pub struct ComposerInstall { name: &'static str }
+pub struct LinkDirs { name: &'static str }
 
-impl Step for ComposerInstall {
+impl Step for LinkDirs {
 
-    fn new(name: &'static str) -> ComposerInstall {
+    fn new(name: &'static str) -> LinkDirs {
         Self { name }
     }
 
-    fn execute (&self, context: &Context) -> Result<(), &str> {
-        let server_command = format!(
-            "cd {} && composer install",
-            context.release_path.trim()
-        );
+    fn execute (&self, context: &Context) -> Result<(), StepError> {
 
-        let mut cmd = Command::new("ssh")
-            .args(&[&context.config.host, server_command.as_str()])
-            .stdout(Stdio::inherit())
-            .spawn()
-            .expect("Failed to execute composer install command step");
+        for dir in context.config.link_dirs.iter() {
+            let shared_dir_path = format!("{}/{}", context.shared_path, dir);
+            let symlink_path    = format!("{}/{}", context.release_path.trim(), dir);
 
-        let status = cmd.wait();
+            //check if shared dir exists, otherwise return error
+            exec_remote_file_exists(&context.config.host, &shared_dir_path, FSResourceType::Directory)?;
+
+            let symlink_command = format!("ln -s {} {}",shared_dir_path, symlink_path);
+
+            exec_remote_cmd(&context.config.host, &symlink_command)?;
+        }
 
         Ok(())
     }
@@ -86,19 +83,4 @@ impl Step for ComposerInstall {
     fn get_name(&self) -> &str {
         self.name
     }
-}
-
-pub fn get_steps() -> Vec<Box<Step>>{
-
-    let core_setup = SetUpStep::new("core:setup");
-    let git_clone = GitClone::new("git:clone");
-    let composer_install = ComposerInstall::new("composer:install");
-
-    let steps: Vec<Box<Step>> = vec![
-        Box::new(core_setup),
-        Box::new(git_clone),
-        Box::new(composer_install),
-    ];
-
-    steps
 }
