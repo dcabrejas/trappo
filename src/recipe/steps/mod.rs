@@ -5,7 +5,6 @@ use std::io::{Error, ErrorKind};
 pub mod core;
 pub mod git;
 pub mod composer;
-pub mod error;
 
 #[derive(Debug)]
 pub struct Context {
@@ -35,7 +34,7 @@ impl Context {
 
 pub trait Step {
     fn new(name: &'static str) -> Self where Self: Sized;
-    fn execute(&self, context: &Context) -> Result<(), error::StepError>;
+    fn execute(&self, context: &Context) -> Result<(), String>;
     fn get_name(&self) -> &str;
 }
 
