@@ -1,8 +1,11 @@
 use std::fs::File;
 use std::io::prelude::*;
-use toml_edit::{Document, Table};
+use toml_edit::*;
+use std::collections::HashMap;
 
 pub mod error;
+
+use self::error::*;
 
 #[derive(Debug, Clone)]
 pub struct HostConfig {
@@ -14,83 +17,83 @@ pub struct HostConfig {
     pub link_dirs: Vec<String>
 }
 
-pub fn parse_config_file(file_name: &str, stage: &str) -> Result<HostConfig, error::ParseError> {
-    let mut file = File::open(file_name)?;
+pub fn parse_config_file(file_name: &str, stage: &str) -> Result<HostConfig, ConfigError> {
+    let mut file = File::open(file_name)
+        .map_err(|_| ConfigError::NotFound(stage.into()))?;
 
     let mut contents = String::new();
-    file.read_to_string(&mut contents)?;
+    file.read_to_string(&mut contents).map_err(|_| ConfigError::IoError)?;
 
     let doc = contents.parse::<Document>().unwrap();
+
+    //save global table (Option) for overriden values later
+    let global_table = doc["global"].as_table();
+
     let host_table = match doc[stage].as_table() {
-        Some(host_table) => host_table,
+        Some(table) => table,
         None => {
-            return Err(error::ParseError::new("Error parsing host table".into()))
+            return Err(ConfigError::BadStage(stage.into()))
         }
     };
 
+    let mut config_map = HashMap::new();
+
+    //populate hash map with the stage config items
+    for (key, value) in host_table.iter() {
+        config_map.insert(key, value);
+    };
+
+    //if global table is present, override stage items with global items
+    if let Some(globals) = global_table {
+        for (key, value) in globals.iter() {
+            config_map.insert(key, value);
+        };
+    }
+
     Ok(
         HostConfig {
-            host: get_from_table_as_string("host", &host_table)?,
-            deploy_path: get_from_table_as_string("deploy-path", &host_table)?,
-            keep_releases: get_from_table_as_integer("keep-releases", &host_table)? as i8,
-            repo_url: get_from_table_as_string("repo-url", &host_table)?,
-            link_files: get_from_table_as_string_vector("linked_files", &host_table)?,
-            link_dirs: get_from_table_as_string_vector("linked_dirs", &host_table)?
+            host: parse_string("host", &config_map)?,
+            deploy_path: parse_string("deploy-path", &config_map)?,
+            //keep_releases defaults to 3 if not present
+            keep_releases: parse_integer("keep-releases", &config_map).unwrap_or(3 as i64) as i8,
+            repo_url: parse_string("repo-url", &config_map)?,
+            link_files: parse_string_vector("linked-files", &config_map).unwrap_or(Vec::new()),
+            link_dirs: parse_string_vector("linked-dirs", &config_map).unwrap_or(Vec::new())
         }
     )
 }
 
-fn get_from_table_as_string(key: &str, table: &Table) -> Result<String, error::ParseError> {
-    let value = match table.get(key) {
-        Some(value) => match value.as_str() {
-            Some(value) => value,
-            None => {
-                let error = format!("Error parsing {} from config file", key);
-                return Err(error::ParseError::new(error))
-            }
-        },
-        None => {
-            let error = format!("{} value not found in config file", key);
-            return Err(error::ParseError::new(error))
-        }
-    };
-
-    Ok(value.into())
-}
-
-fn get_from_table_as_integer(key: &str, table: &Table) -> Result<i64, error::ParseError> {
-    let value = match table.get(key) {
+fn parse_integer(key: &str, hash_map: &HashMap<&str, &Item>) -> Result<i64, ConfigError> {
+    let value = match hash_map.get(key) {
         Some(value) => match value.as_integer() {
             Some(value) => value,
-            None => {
-                let error = format!("Error parsing {} from config file", key);
-                return Err(error::ParseError::new(error))
-            }
+            None => return Err(ConfigError::BadType(key.into(), "integer".into()))
         },
-        None => {
-            let error = format!("{} value not found in config file", key);
-            return Err(error::ParseError::new(error))
-        }
+        None => return Err(ConfigError::MissingField(key.into()))
     };
 
     Ok(value)
 }
 
-fn get_from_table_as_string_vector(key: &str, table: &Table) -> Result<Vec<String>, error::ParseError> {
-    let value = match table.get(key) {
-        Some(value) => match value.as_array() {
-            Some(value) => {
-                value.iter().map(|value| value.as_str().unwrap().to_string()).collect()
-            },
-            None => {
-                let error = format!("Error parsing {} from config file", key);
-                return Err(error::ParseError::new(error))
-            }
+fn parse_string(key: &str, hash_map: &HashMap<&str, &Item>) -> Result<String, ConfigError> {
+    let value = match hash_map.get(key) {
+        Some(value) => match value.as_str() {
+            Some(value) => value,
+            None => return Err(ConfigError::BadType(key.into(), "string".into()))
         },
-        None => {
-            let error = format!("{} value not found in config file", key);
-            return Err(error::ParseError::new(error))
-        }
+        None => return Err(ConfigError::MissingField(key.into()))
+    };
+
+    Ok(value.into())
+}
+
+fn parse_string_vector(key: &str, hash_map: &HashMap<&str, &Item>) -> Result<Vec<String>, ConfigError> {
+    let value = match hash_map.get(key) {
+        Some(value) => match value.as_array() {
+            Some(value) => value.iter().map(|value| value.as_str().unwrap().to_string()).collect(),
+            None => return Err(ConfigError::BadType(key.into(), "array".into()))
+        },
+        None => return Err(ConfigError::MissingField(key.into()))
     };
 
     Ok(value)
