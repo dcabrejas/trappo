@@ -1,5 +1,5 @@
 [package]
-name = "deployer"
+name = "deploy-rs"
 version = "0.1.0"
 authors = ["Diego Cabrejas <dcabrejas@icloud.com>"]
 

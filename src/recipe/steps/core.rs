@@ -1,6 +1,6 @@
-use super::{Step, Context};
-use super::super::super::cmd::*;
-use super::super::super::display::*;
+use recipe::steps::{Step, Context};
+use cmd::*;
+use display::*;
 
 pub struct SetUpStep { name: &'static str }
 

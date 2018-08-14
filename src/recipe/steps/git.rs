@@ -1,5 +1,5 @@
-use super::{Step, Context};
-use super::super::super::cmd::*;
+use recipe::steps::{Step, Context};
+use cmd::*;
 
 pub struct GitClone { name: &'static str }
 
