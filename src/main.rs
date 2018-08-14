@@ -1,47 +1,21 @@
-extern crate toml_edit;
-extern crate ansi_term;
+extern crate deploy_rs;
 
-mod config;
-mod recipe;
-mod display;
-mod cmd;
-
-use std::env;
-use config::parse_config_file;
-use recipe::{Recipe, RecipeExecutor};
-use recipe::steps::*;
-use std::process::exit;
-use std::error::Error;
+use deploy_rs::recipe::{Recipe, RecipeExecutor};
+use deploy_rs::recipe::steps::{Step, core};
 
 fn main() {
-    let environment = env::args().nth(1).unwrap_or_else(|| {
-        eprintln!("error: You need to pass the environment as the first argument, eg. cargo run development");
-        exit(1);
-    });
 
-    let host_config =  match parse_config_file("Deployer.toml", &environment) {
-        Ok(context) => context,
-        Err(config_error) => {
-            eprintln!("config error: {}", config_error);
-            exit(1);
-        }
-    };
+    let stage_context = deploy_rs::init_stage_context();
 
-    //println!("host config : {:#?}", host_config);
-    //exit(0);
+    let extra_step = core::LinkDirs::new("core:link:directories");
+    let extra_step_before = core::CleanUpReleases::new("core:cleanup:directories");
 
-    let context = match Context::from_host_config(host_config) {
-        Ok(context) => context,
-        Err(message) => {
-            eprintln!("error: {:?}", message.description());
-            exit(1);
-        }
-    };
+    let recipe = Recipe::build()
+        .name("Main Recipe")
+        .with_core_steps()
+        .with_step_after("core:link:files", extra_step)
+        .with_step_before("core:link:files", extra_step_before)
+        .finish();
 
-    let recipe = Recipe {
-        name: "My first recipe".to_string(),
-        steps: get_steps()
-    };
-
-    RecipeExecutor::execute(&recipe, &context);
+    RecipeExecutor::execute(&recipe, &stage_context);
 }
