@@ -10,6 +10,9 @@ fn main() {
     let extra_step = core::LinkDirs::new("core:link:directories");
     let extra_step_before = core::CleanUpReleases::new("core:cleanup:directories");
 
+    //core steps are "core:setup" and "core:link:files"
+    //core:setup -> core:cleanup:directories -> core:link:files -> core:link:directories
+
     let recipe = Recipe::build()
         .name("Main Recipe")
         .with_core_steps()
