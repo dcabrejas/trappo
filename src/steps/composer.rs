@@ -1,20 +1,12 @@
-use recipe::steps::{Step, Context};
+use steps::{Step, Context};
 use cmd::*;
 
-pub struct GitClone { name: &'static str }
+pub struct ComposerInstall;
 
-impl Step for GitClone {
-
-    fn new(name: &'static str) -> GitClone {
-        Self { name }
-    }
+impl Step for ComposerInstall {
 
     fn execute (&self, context: &Context) -> Result<(), String> {
-        let server_command = format!(
-            "git clone {} {}",
-            context.config.repo_url.trim(),
-            context.release_path.trim(),
-        );
+        let server_command = format!("cd {} && composer install", context.release_path.trim());
 
         let status = exec_remote_cmd_inherit_output(&context.config.host, &server_command)
             .map_err(|_io_error| format!("Could not connect to the server") )?;
@@ -32,6 +24,6 @@ impl Step for GitClone {
     }
 
     fn get_name(&self) -> &str {
-        self.name
+        "composer:install"
     }
 }

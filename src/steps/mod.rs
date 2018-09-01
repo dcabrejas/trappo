@@ -1,4 +1,4 @@
-use config::HostConfig;
+use config::stages::HostConfig;
 use std::process::Command;
 use std::io::{Error, ErrorKind};
 
@@ -35,23 +35,6 @@ impl Context {
 }
 
 pub trait Step {
-    fn new(name: &'static str) -> Self where Self: Sized;
     fn execute(&self, context: &Context) -> Result<(), String>;
     fn get_name(&self) -> &str;
-}
-
-//return the steps you want to execute
-pub fn get_steps() -> Vec<Box<Step>>{
-
-    let steps: Vec<Box<Step>> = vec![
-        Box::new(self::core::SetUpStep::new("core:setup")),
-        Box::new(self::git::GitClone::new("git:clone")),
-        Box::new(self::composer::ComposerInstall::new("composer:install")),
-        Box::new(self::core::LinkFiles::new("core:link:files")),
-        Box::new(self::core::LinkDirs::new("core:link:directories")),
-        Box::new(self::core::SymlinkCurrent::new("core:link:current")),
-        Box::new(self::core::CleanUpReleases::new("core:cleanup:releases"))
-    ];
-
-    steps
 }

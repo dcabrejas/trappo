@@ -1,6 +1,4 @@
-pub mod steps;
-
-use recipe::steps::{Step, Context, core};
+use steps::{Step, Context, core::*, git::*, composer::*};
 use display::*;
 use std::cell::RefCell;
 
@@ -60,11 +58,13 @@ impl RecipeBuilder {
     pub fn with_core_steps(&mut self) -> &mut Self {
         if let Some(ref mut recipe) = self.recipe {
             let mut recipe_ref = recipe.borrow_mut();
-            recipe_ref.steps.push(Box::new(core::SetUpStep::new("core:setup")));
-            recipe_ref.steps.push(Box::new(core::LinkFiles::new("core:link:files")));
-            //recipe.steps.push(Box::new(core::LinkDirs::new("core:link:directories")));
-            //recipe.steps.push(Box::new(core::SymlinkCurrent::new("core:link:current")));
-            //recipe.steps.push(Box::new(core::CleanUpReleases::new("core:cleanup:releases")));
+            recipe_ref.steps.push(Box::new(InitStep));
+            recipe_ref.steps.push(Box::new(GitClone));
+            recipe_ref.steps.push(Box::new(ComposerInstall));
+            recipe_ref.steps.push(Box::new(LinkFiles));
+            recipe_ref.steps.push(Box::new(LinkDirs));
+            recipe_ref.steps.push(Box::new(SymlinkCurrent));
+            recipe_ref.steps.push(Box::new(CleanUpReleases));
         }
 
         self
@@ -118,13 +118,13 @@ impl RecipeExecutor {
 
         for step in recipe.steps.iter() {
             render_success(&format!("➜  Executing step {}...", step.get_name()));
-            //match step.execute(context) {
-            //    Err(msg) => {
-            //        render_error(&format!("💣 Failed because of an IO error {}", msg));
-            //        exit(1);
-            //    },
-            //    Ok(_) => render_success(&format!("🗸  Step {} executed successfully", step.get_name()))
-            //}
+            match step.execute(context) {
+                Err(msg) => {
+                    render_error(&format!("💣 Failed because of an IO error {}", msg));
+                    //exit(1);
+                },
+                Ok(_) => render_success(&format!("🗸  Step {} executed successfully", step.get_name()))
+            }
         }
     }
 }
