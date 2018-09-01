@@ -1,24 +1,29 @@
 extern crate deploy_rs;
 
 use deploy_rs::recipe::{Recipe, RecipeExecutor};
-use deploy_rs::recipe::steps::{Step, core};
+use deploy_rs::steps::core;
+use deploy_rs::config::steps::*;
 
 fn main() {
 
     let stage_context = deploy_rs::init_stage_context();
+    let config_steps  = deploy_rs::init_steps_from_config();
 
-    let extra_step = core::LinkDirs::new("core:link:directories");
-    let extra_step_before = core::CleanUpReleases::new("core:cleanup:directories");
+    let mut recipe_builder = Recipe::build();
+    recipe_builder.name("Main Recipe").with_core_steps();
 
-    //core steps are "core:setup" and "core:link:files"
-    //core:setup -> core:cleanup:directories -> core:link:files -> core:link:directories
+    for step_config in config_steps.into_iter() {
+        match step_config.position {
+            StepPosition::Before => {
+                recipe_builder.with_step_before(&step_config.ref_step.to_owned(), core::RawCmdStep::from(step_config));
+            },
+            StepPosition::After => {
+                recipe_builder.with_step_after(&step_config.ref_step.to_owned(), core::RawCmdStep::from(step_config));
+            }
+        };
+    }
 
-    let recipe = Recipe::build()
-        .name("Main Recipe")
-        .with_core_steps()
-        .with_step_after("core:link:files", extra_step)
-        .with_step_before("core:link:files", extra_step_before)
-        .finish();
+    let recipe = recipe_builder.finish();
 
     RecipeExecutor::execute(&recipe, &stage_context);
 }

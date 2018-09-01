@@ -1,13 +1,43 @@
-use recipe::steps::{Step, Context};
+use steps::{Step, Context};
+use config::steps::StepConfig;
 use cmd::*;
 use display::*;
 
-pub struct SetUpStep { name: &'static str }
+pub struct RawCmdStep { name: String, raw_cmd: String }
 
-impl Step for SetUpStep {
-    fn new(name: &'static str) -> SetUpStep {
-        Self { name }
+impl Step for RawCmdStep {
+
+    fn execute (&self, context: &Context) -> Result<(), String> {
+
+        let status = exec_remote_cmd_inherit_output(&context.config.host, &self.raw_cmd)
+            .map_err(|_io_error| format!("Could not connect to the server") )?;
+
+        if !status.success() {
+            return Err(format!(
+                "Invalid status code {} returned by command '{}' at '{}'.",
+                status.code().unwrap_or(0),
+                self.raw_cmd,
+                context.config.host
+            ));
+        }
+
+        Ok(())
     }
+
+    fn get_name(&self) -> &str {
+        &self.name
+    }
+}
+
+impl From<StepConfig> for RawCmdStep {
+    fn from(config_step: StepConfig) -> Self {
+        RawCmdStep { name: config_step.name, raw_cmd: config_step.comand}
+    }
+}
+
+pub struct InitStep;
+
+impl Step for InitStep {
 
     fn execute (&self, context: &Context) -> Result<(), String> {
         let create_release_path_cmd = format!("mkdir -p {}", context.release_path);
@@ -28,17 +58,13 @@ impl Step for SetUpStep {
     }
 
     fn get_name(&self) -> &str {
-        self.name
+        "core:init"
     }
 }
 
-pub struct LinkFiles { name: &'static str }
+pub struct LinkFiles;
 
 impl Step for LinkFiles {
-
-    fn new(name: &'static str) -> LinkFiles {
-        Self { name }
-    }
 
     fn execute (&self, context: &Context) -> Result<(), String> {
 
@@ -65,17 +91,13 @@ impl Step for LinkFiles {
     }
 
     fn get_name(&self) -> &str {
-        self.name
+        "core:link:files"
     }
 }
 
-pub struct LinkDirs { name: &'static str }
+pub struct LinkDirs;
 
 impl Step for LinkDirs {
-
-    fn new(name: &'static str) -> LinkDirs {
-        Self { name }
-    }
 
     fn execute (&self, context: &Context) -> Result<(), String> {
 
@@ -102,17 +124,13 @@ impl Step for LinkDirs {
     }
 
     fn get_name(&self) -> &str {
-        self.name
+        "core:link:directories"
     }
 }
 
-pub struct SymlinkCurrent { name: &'static str }
+pub struct SymlinkCurrent;
 
 impl Step for SymlinkCurrent {
-
-    fn new(name: &'static str) -> SymlinkCurrent {
-        Self { name }
-    }
 
     fn execute (&self, context: &Context) -> Result<(), String> {
 
@@ -145,17 +163,13 @@ impl Step for SymlinkCurrent {
     }
 
     fn get_name(&self) -> &str {
-        self.name
+        "core:link:current"
     }
 }
 
-pub struct CleanUpReleases { name: &'static str }
+pub struct CleanUpReleases;
 
 impl Step for CleanUpReleases {
-
-    fn new(name: &'static str) -> CleanUpReleases {
-        Self { name }
-    }
 
     fn execute (&self, context: &Context) -> Result<(), String> {
 
@@ -193,6 +207,6 @@ impl Step for CleanUpReleases {
 
 
     fn get_name(&self) -> &str {
-        self.name
+        "core:cleanup:releases"
     }
 }

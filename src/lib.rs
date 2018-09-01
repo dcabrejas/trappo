@@ -2,25 +2,21 @@ extern crate toml_edit;
 extern crate ansi_term;
 
 pub mod recipe;
-
-mod config;
+pub mod steps;
+pub mod config;
 mod display;
 mod cmd;
 
 use std::env;
-use config::parse_config_file;
+use config::stages::parse_config_file;
+use config::steps::{parse_steps_config_file, StepConfig};
 use std::process::exit;
-use recipe::steps::Context;
+use steps::Context;
 use std::error::Error;
 
 pub fn init_stage_context() -> Context {
 
-    let environment = env::args().nth(1).unwrap_or_else(|| {
-        eprintln!("error: You need to pass the environment as the first argument, eg. cargo run development");
-        exit(1);
-    });
-
-    let host_config =  match parse_config_file("Deployer.toml", &environment) {
+    let host_config =  match parse_config_file(".deploy-rs/config.toml", &get_environment()) {
         Ok(context) => context,
         Err(config_error) => {
             eprintln!("config error: {}", config_error);
@@ -37,4 +33,18 @@ pub fn init_stage_context() -> Context {
     };
 
     context
+}
+
+pub fn init_steps_from_config() -> Vec<StepConfig> {
+    parse_steps_config_file(".deploy-rs/steps.toml", &get_environment()).unwrap_or_else(|e| {
+        eprintln!("steps config error: {}", e);
+        exit(1);
+    })
+}
+
+fn get_environment() -> String {
+    env::args().nth(1).unwrap_or_else(|| {
+        eprintln!("error: You need to pass the environment as the first argument, eg. cargo run development");
+        exit(1);
+    })
 }

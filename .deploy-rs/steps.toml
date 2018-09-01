@@ -1,0 +1,10 @@
+[global]
+  [[global.steps]]
+  name    = "custom:hi"
+  command = "echo 'Hello global world!'"
+  after   = "core:init"
+[develop]
+  [[develop.steps]]
+  name    = "custom:hi"
+  command = "echo 'hello world!'"
+  after   = "core:init"
