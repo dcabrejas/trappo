@@ -1,4 +1,4 @@
-use steps::{Step, Context, core::*, git::*, composer::*};
+use steps::{Step, Context, core::*, git::*, composer::*, error::StepError};
 use display::*;
 use std::cell::RefCell;
 
@@ -112,19 +112,27 @@ pub struct RecipeExecutor;
 
 impl RecipeExecutor {
 
-    pub fn execute(recipe: &Recipe, context: &Context) -> () {
+    pub fn execute(recipe: &Recipe, context: &Context) -> Result<(),()> {
 
         render_success(&format!("🚀  Deploying to {} using '{}' recipe...", context.config.host, recipe.name));
 
         for step in recipe.steps.iter() {
             render_success(&format!("➜  Executing step {}...", step.get_name()));
+
             match step.execute(context) {
-                Err(msg) => {
-                    render_error(&format!("💣 Failed because of an IO error {}", msg));
-                    //exit(1);
-                },
-                Ok(_) => render_success(&format!("🗸  Step {} executed successfully", step.get_name()))
-            }
+                Ok(_) => render_success(&format!("🗸  Step {} executed successfully", step.get_name())),
+                Err(step_error) => {
+                    match step_error {
+                        StepError::Critical(msg) => {
+                            render_error(&format!("💣 Failed because of a critical error"));
+                            return Err(())
+                        },
+                        StepError::NonCritical(msg) => render_error(&format!("Non-critical error, continuing"))
+                    }
+                }
+            };
         }
+
+        Ok(())
     }
 }
