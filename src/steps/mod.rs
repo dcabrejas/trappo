@@ -1,10 +1,12 @@
 use config::stages::HostConfig;
 use std::process::Command;
 use std::io::{Error, ErrorKind};
+use self::error::StepError;
 
 pub mod core;
 pub mod git;
 pub mod composer;
+pub mod error;
 
 #[derive(Debug)]
 pub struct Context {
@@ -35,6 +37,6 @@ impl Context {
 }
 
 pub trait Step {
-    fn execute(&self, context: &Context) -> Result<(), String>;
+    fn execute(&self, context: &Context) -> Result<(), StepError>;
     fn get_name(&self) -> &str;
 }
