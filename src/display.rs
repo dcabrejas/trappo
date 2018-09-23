@@ -7,3 +7,11 @@ pub fn render_success(text: &str) {
 pub fn render_error(text: &str) {
     println!("{}", Red.paint(text));
 }
+
+pub fn help() {
+    let help = r##"One line
+Two lines
+    Three lines
+    "##;
+    println!("{}", help);  
+}

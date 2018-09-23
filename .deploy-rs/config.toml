@@ -6,7 +6,7 @@ linked-dirs     = ['media']
 
 [develop]
 deploy-path     = "/tmp/___deployer_develop"
-keep-releases   = 1
+keep-releases   = 3
 branch          = "develop"
 
 [staging]
