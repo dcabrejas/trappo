@@ -1,6 +1,20 @@
-# Deployer
+# Trappo
 
-Open source deployment tool written in Rust.
+Free and Open source deployment tool written in Rust.
 
+Easily configure and tailor your deployment process to your needs.
+Easily deploy to any server or rollback with one command.  
 
-This tool is in early stages of development and it is not recommended to use it yet.
+## Documentation
+Check out the official documentation [here](https://www.trappo.tk)
+
+## Contributions
+Although this project is already useful and can be used for production projects,
+Ideas for new features and contributions are welcomed and encouraged. Please open an issue or
+a pull request if you have an idea to make the project better.
+
+## Maintainers
+* Diego Cabrejas [@dcabrejas](https://github.com/dcabrejas)
+
+## License
+Licensed under the [GPLv3](https://github.com/deployphp/deployer/blob/master/LICENSE).
