@@ -1,0 +1,10 @@
+[global]
+  [[global.steps]]
+  name    = "custom:composer:install"
+  command = "composer install"
+  after   = "git:clone"
+[develop]
+  [[develop.steps]]
+  name    = "notify:webhook"
+  command = "curl https://www.third-party/endpoint"
+  after   = "core:cleanup:releases"

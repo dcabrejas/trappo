@@ -1,8 +1,7 @@
 pub mod deployer;
 
-use steps::{Step, Context, core::*, git::*, rollback::*, error::StepError};
+use steps::{Step, core::*, git::*, rollback::*};
 use config::steps::{StepConfig, StepPosition::*};
-use display::*;
 use std::cell::RefCell;
 
 pub struct Recipe {

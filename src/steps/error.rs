@@ -10,7 +10,7 @@ pub enum StepError {
 }
 
 impl StepError {
-    pub fn fromFailedCommand(cmd: &str, status: Option<i32>) -> Self {
+    pub fn from_failed_command(cmd: &str, status: Option<i32>) -> Self {
         let error_msg = match status {
             Some(code) => format!("Command '{}' exited with non-sucessful status code '{}'", cmd, code),
             None => format!("Command '{}' exited with non-sucessful status code", cmd)
@@ -19,7 +19,7 @@ impl StepError {
         StepError::Critical(error_msg)
     }
 
-    pub fn nonCriticalfromError<E: Error>(error: E) -> Self {
+    pub fn non_critical_from_error<E: Error>(error: E) -> Self {
         StepError::NonCritical(error.to_string())
     }
 }

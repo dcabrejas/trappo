@@ -35,7 +35,7 @@ fn execute_steps(steps: &Vec<Box<dyn Step>>, context: &Context) -> Result<(), St
             Err(step_error) => {
                 match step_error {
                     StepError::Critical(msg) => return Err(msg),
-                    StepError::NonCritical(msg) => render_error(&format!("Non-critical error, continuing"))
+                    StepError::NonCritical(_) => render_error(&format!("Non-critical error, continuing"))
                 }
             }
         };

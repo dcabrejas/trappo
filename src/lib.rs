@@ -7,13 +7,11 @@ pub mod config;
 mod display;
 mod cmd;
 
-use std::env;
 use config::stages::parse_config_file;
 use config::steps::{parse_steps_config_file, StepConfig};
 use std::process::exit;
 use steps::Context;
 use std::error::Error;
-use display::*;
 
 pub enum Operation {
     Deploy,
