@@ -15,7 +15,7 @@ impl Step for GitClone {
         let status = exec_remote_cmd_inherit_output(&context.config.host, &server_command)?;
 
         if !status.success() {
-            return Err(StepError::fromFailedCommand(&server_command, status.code()));
+            return Err(StepError::from_failed_command(&server_command, status.code()));
         }
 
         Ok(())

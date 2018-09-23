@@ -65,7 +65,7 @@ impl Step for SymlinkPreviousRelease {
             let status = exec_remote_cmd(&context.config.host, &remove_current_command)?.status;
 
             if !status.success() {
-                return Err(StepError::fromFailedCommand(&remove_current_command, status.code()));
+                return Err(StepError::from_failed_command(&remove_current_command, status.code()));
             }
         }
 
@@ -74,7 +74,7 @@ impl Step for SymlinkPreviousRelease {
         let status = exec_remote_cmd(&context.config.host, &create_current_symlink_cmd)?.status;
 
         if !status.success() {
-            return Err(StepError::fromFailedCommand(&create_current_symlink_cmd, status.code()));
+            return Err(StepError::from_failed_command(&create_current_symlink_cmd, status.code()));
         }
 
         Ok(())

@@ -1,9 +1,8 @@
 use config::stages::HostConfig;
-use cmd::*;
-use std::process::Command;
 use std::io::{Error, ErrorKind};
 use self::error::StepError;
 use super::Operation;
+use super::cmd::*;
 
 pub mod core;
 pub mod rollback;

@@ -6,7 +6,7 @@
 //! after a successfull deploy.
 //!
 //! The only exception is the `RawCmdStep`. This struct is what commands feed to the program using an external
-//! `.deploy_rs/steps.toml` file end up being. And they can be executed during deployment by invoking the
+//! `.trappo/steps.toml` file end up being. And they can be executed during deployment by invoking the
 //! recipe builder's `.with_steps_from_file(file_name: String)` method. <- TODO implementation.
 
 use steps::{Step, Context, error::StepError};
@@ -15,7 +15,7 @@ use cmd::*;
 use display::*;
 
 /// This struct is what commands feed to the program using an external
-/// `.deploy_rs/steps.toml` file end up being. And they can be executed during deployment by invoking the
+/// `.trappo/steps.toml` file end up being. And they can be executed during deployment by invoking the
 /// recipe builder's `.with_steps_from_file(file_name: String)` method.
 ///
 /// It executes the command provided in the config file directly on the server, if the command fails
@@ -30,7 +30,7 @@ impl Step for RawCmdStep {
         let status = exec_remote_cmd_inherit_output(&context.config.host, &server_command)?;
 
         if !status.success() {
-            return Err(StepError::fromFailedCommand(&self.raw_cmd, status.code()));
+            return Err(StepError::from_failed_command(&self.raw_cmd, status.code()));
         }
 
         Ok(())
@@ -59,7 +59,7 @@ impl Step for InitStep {
         let status = exec_remote_cmd(&context.config.host, &create_release_path_cmd)?.status;
 
         if !status.success() {
-            return Err(StepError::fromFailedCommand(&create_release_path_cmd, status.code()));
+            return Err(StepError::from_failed_command(&create_release_path_cmd, status.code()));
         }
 
         Ok(())
@@ -75,7 +75,7 @@ pub struct LinkFiles;
 impl Step for LinkFiles {
 
     fn execute (&self, context: &Context) -> Result<(), StepError> {
-        
+
         for file in context.config.link_files.iter() {
             let shared_file_path = format!("{}/{}", context.shared_path, file);
             let symlink_path     = format!("{}/{}", context.release_path.trim(), file);
@@ -92,7 +92,7 @@ impl Step for LinkFiles {
             let status = exec_remote_cmd(&context.config.host, &symlink_command)?.status;
 
             if !status.success() {
-                return Err(StepError::fromFailedCommand(&symlink_command, status.code()));
+                return Err(StepError::from_failed_command(&symlink_command, status.code()));
             }
         }
 
@@ -125,7 +125,7 @@ impl Step for LinkDirs {
             let status = exec_remote_cmd(&context.config.host, &symlink_command)?.status;
 
             if !status.success() {
-                return Err(StepError::fromFailedCommand(&symlink_command, status.code()));
+                return Err(StepError::from_failed_command(&symlink_command, status.code()));
             }
         }
 
@@ -153,7 +153,7 @@ impl Step for SymlinkCurrent {
             let status = exec_remote_cmd(&context.config.host, &remove_current_command)?.status;
 
             if !status.success() {
-                return Err(StepError::fromFailedCommand(&remove_current_command, status.code()));
+                return Err(StepError::from_failed_command(&remove_current_command, status.code()));
             }
         }
 
@@ -162,7 +162,7 @@ impl Step for SymlinkCurrent {
         let status = exec_remote_cmd(&context.config.host, &create_current_symlink_cmd)?.status;
 
         if !status.success() {
-            return Err(StepError::fromFailedCommand(&create_current_symlink_cmd, status.code()));
+            return Err(StepError::from_failed_command(&create_current_symlink_cmd, status.code()));
         }
 
         Ok(())
@@ -180,7 +180,7 @@ impl Step for CleanUpReleases {
     fn execute (&self, context: &Context) -> Result<(), StepError> {
 
         let mut releases   = exec_remote_fetch_sorted_filenames_in_dir(&context.config.host, &context.releases_path, SortOrder::Asc)
-            .map_err(|e| StepError::nonCriticalfromError(e))?;
+            .map_err(|e| StepError::non_critical_from_error(e))?;
 
         let keep_releases  = context.config.keep_releases as usize;
         let total_releases = releases.len();

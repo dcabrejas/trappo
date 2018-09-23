@@ -47,17 +47,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "deploy_rs"
-version = "0.1.0"
-dependencies = [
- "ansi_term 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "docopt 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 1.0.77 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_derive 1.0.77 (registry+https://github.com/rust-lang/crates.io-index)",
- "toml_edit 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "docopt"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -210,6 +199,17 @@ dependencies = [
  "chrono 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "combine 3.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "linked-hash-map 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "trappo"
+version = "0.1.0"
+dependencies = [
+ "ansi_term 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "docopt 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.77 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_derive 1.0.77 (registry+https://github.com/rust-lang/crates.io-index)",
+ "toml_edit 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
