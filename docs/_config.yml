@@ -1,0 +1,46 @@
+# name of the software
+name: Trappo Deployment Tool
+
+project:
+    version: 0.1.0
+    download_url: https://github.com/dcabrejas/deploy-rs
+
+license:
+    software: GPLv3 License
+    software_url: https://www.gnu.org/licenses/gpl-3.0.en.html
+
+links:
+    header:
+      - title: GitHub
+        url: https://github.com/dcabrejas/deploy-rs
+    footer:
+      - title: GitHub
+        url: https://github.com/dcabrejas/deploy-rs
+      - title: Issues
+        url: https://github.com/dcabrejas/deploy-rs/issues?state=open
+
+ui:
+    header:
+        color1: "#080331"
+        color2: "#673051"
+        trianglify: true
+
+social:
+    github:
+        user: dcabrejas
+        repo: deploy-rs
+    twitter:
+        enabled: false
+        via:
+        hash:
+        account:
+    facebook:
+        enabled: false
+        profileUrl:
+
+# Build settings
+markdown: kramdown
+exclude:
+    - Gemfile
+    - Gemfile.lock
+theme: jekyll-docs-theme

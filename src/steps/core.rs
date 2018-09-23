@@ -26,7 +26,8 @@ impl Step for RawCmdStep {
 
     fn execute (&self, context: &Context) -> Result<(), StepError> {
 
-        let status = exec_remote_cmd_inherit_output(&context.config.host, &self.raw_cmd)?;
+        let server_command = format!("cd {} && {}", context.release_path.trim(), self.raw_cmd);
+        let status = exec_remote_cmd_inherit_output(&context.config.host, &server_command)?;
 
         if !status.success() {
             return Err(StepError::fromFailedCommand(&self.raw_cmd, status.code()));
@@ -74,9 +75,7 @@ pub struct LinkFiles;
 impl Step for LinkFiles {
 
     fn execute (&self, context: &Context) -> Result<(), StepError> {
-
-        return Err(StepError::Critical("YoYo".into()));
-
+        
         for file in context.config.link_files.iter() {
             let shared_file_path = format!("{}/{}", context.shared_path, file);
             let symlink_path     = format!("{}/{}", context.release_path.trim(), file);

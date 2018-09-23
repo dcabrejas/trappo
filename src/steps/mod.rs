@@ -8,7 +8,6 @@ use super::Operation;
 pub mod core;
 pub mod rollback;
 pub mod git;
-pub mod composer;
 pub mod error;
 
 #[derive(Debug)]

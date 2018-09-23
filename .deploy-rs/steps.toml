@@ -1,10 +1,10 @@
 [global]
   [[global.steps]]
-  name    = "custom:hi"
-  command = "echo 'Hello global world!'"
-  after   = "core:init"
+  name    = "custom:composer:install"
+  command = "composer install"
+  after   = "git:clone"
 [develop]
   [[develop.steps]]
-  name    = "custom:hi"
-  command = "echo 'hello world!'"
-  after   = "core:init"
+  name    = "notify:webhook"
+  command = "curl https://www.third-party/endpoint"
+  after   = "core:cleanup:releases"

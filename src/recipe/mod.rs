@@ -1,6 +1,6 @@
 pub mod deployer;
 
-use steps::{Step, Context, core::*, git::*, composer::*, rollback::*, error::StepError};
+use steps::{Step, Context, core::*, git::*, rollback::*, error::StepError};
 use config::steps::{StepConfig, StepPosition::*};
 use display::*;
 use std::cell::RefCell;
@@ -65,7 +65,6 @@ impl RecipeBuilder {
             let mut recipe_ref = recipe.borrow_mut();
             recipe_ref.steps.push(Box::new(InitStep));
             recipe_ref.steps.push(Box::new(GitClone));
-            recipe_ref.steps.push(Box::new(ComposerInstall));
             recipe_ref.steps.push(Box::new(LinkFiles));
             recipe_ref.steps.push(Box::new(LinkDirs));
             recipe_ref.steps.push(Box::new(SymlinkCurrent));
