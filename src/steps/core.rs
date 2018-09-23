@@ -1,8 +1,25 @@
+//! Contains the core steps included out of the box which are used during a deployment
+//! when the recipe builder method `.with_core_steps` is invoked.
+//!
+//! When a deployment is run, there are certain steps that are necessary for every deployment.
+//! These include things like initial set up of directories, setting up symlinks and cleaning up old releases
+//! after a successfull deploy.
+//!
+//! The only exception is the `RawCmdStep`. This struct is what commands feed to the program using an external
+//! `.deploy_rs/steps.toml` file end up being. And they can be executed during deployment by invoking the
+//! recipe builder's `.with_steps_from_file(file_name: String)` method. <- TODO implementation.
+
 use steps::{Step, Context, error::StepError};
 use config::steps::StepConfig;
 use cmd::*;
 use display::*;
 
+/// This struct is what commands feed to the program using an external
+/// `.deploy_rs/steps.toml` file end up being. And they can be executed during deployment by invoking the
+/// recipe builder's `.with_steps_from_file(file_name: String)` method.
+///
+/// It executes the command provided in the config file directly on the server, if the command fails
+/// it returns a critial error which will trigger a rollback. The output of the command is shown in the terminal.
 pub struct RawCmdStep { name: String, raw_cmd: String }
 
 impl Step for RawCmdStep {
@@ -29,6 +46,8 @@ impl From<StepConfig> for RawCmdStep {
     }
 }
 
+/// It performs the initial setup on the server prior to deployment.
+/// Basically creating the deployment path folder if it doesn't already exist.
 pub struct InitStep;
 
 impl Step for InitStep {
@@ -55,6 +74,8 @@ pub struct LinkFiles;
 impl Step for LinkFiles {
 
     fn execute (&self, context: &Context) -> Result<(), StepError> {
+
+        return Err(StepError::Critical("YoYo".into()));
 
         for file in context.config.link_files.iter() {
             let shared_file_path = format!("{}/{}", context.shared_path, file);
@@ -159,8 +180,9 @@ impl Step for CleanUpReleases {
 
     fn execute (&self, context: &Context) -> Result<(), StepError> {
 
-        let mut releases   = exec_remote_fetch_sorted_filenames_in_dir(&context.config.host, &context.releases_path)
+        let mut releases   = exec_remote_fetch_sorted_filenames_in_dir(&context.config.host, &context.releases_path, SortOrder::Asc)
             .map_err(|e| StepError::nonCriticalfromError(e))?;
+
         let keep_releases  = context.config.keep_releases as usize;
         let total_releases = releases.len();
 

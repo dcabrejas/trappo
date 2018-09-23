@@ -13,10 +13,16 @@ use config::steps::{parse_steps_config_file, StepConfig};
 use std::process::exit;
 use steps::Context;
 use std::error::Error;
+use display::*;
 
-pub fn init_stage_context() -> Context {
+pub enum Operation {
+    Deploy,
+    Rollback
+}
 
-    let host_config =  match parse_config_file(".deploy-rs/config.toml", &get_environment()) {
+pub fn init_stage_context(config_file: &str, stage: &str, opt: Operation) -> Context {
+
+    let host_config =  match parse_config_file(config_file, stage) {
         Ok(context) => context,
         Err(config_error) => {
             eprintln!("config error: {}", config_error);
@@ -24,7 +30,7 @@ pub fn init_stage_context() -> Context {
         }
     };
 
-    let context = match Context::from_host_config(host_config) {
+    let context = match Context::from_host_config(host_config, opt) {
         Ok(context) => context,
         Err(message) => {
             eprintln!("error: {:?}", message.description());
@@ -35,16 +41,9 @@ pub fn init_stage_context() -> Context {
     context
 }
 
-pub fn init_steps_from_config() -> Vec<StepConfig> {
-    parse_steps_config_file(".deploy-rs/steps.toml", &get_environment()).unwrap_or_else(|e| {
+pub fn init_steps_from_config(config_file: &str, stage: &str) -> Vec<StepConfig> {
+    parse_steps_config_file(config_file, stage).unwrap_or_else(|e| {
         eprintln!("steps config error: {}", e);
-        exit(1);
-    })
-}
-
-fn get_environment() -> String {
-    env::args().nth(1).unwrap_or_else(|| {
-        eprintln!("error: You need to pass the environment as the first argument, eg. cargo run development");
         exit(1);
     })
 }
