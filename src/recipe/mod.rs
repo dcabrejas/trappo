@@ -1,33 +1,30 @@
 pub mod deployer;
 
-use steps::{Step, core::*, git::*, rollback::*};
 use config::steps::{StepConfig, StepPosition::*};
 use std::cell::RefCell;
+use steps::{core::*, git::*, rollback::*, Step};
 
 pub struct Recipe {
-    pub name : String,
+    pub name: String,
     pub steps: Vec<Box<Step>>,
-    pub rollback_steps: Vec<Box<Step>>
+    pub rollback_steps: Vec<Box<Step>>,
 }
 
 impl Recipe {
-
     pub fn build() -> RecipeBuilder {
         RecipeBuilder {
-            recipe: Some(RefCell::new(Recipe::default()))
+            recipe: Some(RefCell::new(Recipe::default())),
         }
     }
 
     fn get_step_index(&self, step_name: &str) -> Option<usize> {
         let mut node_index: Option<usize> = None;
 
-        let mut index: usize = 0;
-        for step in &self.steps {
+        for (index, step) in self.steps.iter().enumerate() {
             if step.get_name() == step_name {
                 node_index = Some(index);
                 break;
             }
-            index += 1;
         }
 
         node_index
@@ -39,13 +36,13 @@ impl Default for Recipe {
         Recipe {
             name: "Anonymous Recipe".into(),
             steps: Vec::new(),
-            rollback_steps: Vec::new()
+            rollback_steps: Vec::new(),
         }
     }
 }
 
 pub struct RecipeBuilder {
-    recipe: Option<RefCell<Recipe>>
+    recipe: Option<RefCell<Recipe>>,
 }
 
 impl RecipeBuilder {
@@ -80,8 +77,12 @@ impl RecipeBuilder {
         if let Some(ref mut recipe) = self.recipe {
             let mut recipe_ref = recipe.borrow_mut();
             recipe_ref.rollback_steps.push(Box::new(CanRollBack));
-            recipe_ref.rollback_steps.push(Box::new(RemoveCurrentRelease));
-            recipe_ref.rollback_steps.push(Box::new(SymlinkPreviousRelease));
+            recipe_ref
+                .rollback_steps
+                .push(Box::new(RemoveCurrentRelease));
+            recipe_ref
+                .rollback_steps
+                .push(Box::new(SymlinkPreviousRelease));
         }
 
         self
@@ -92,15 +93,26 @@ impl RecipeBuilder {
     ///
     ///panics if reference steps are not found in the inner vector
     pub fn with_config_steps(&mut self, config_steps: Vec<StepConfig>) -> &mut Self {
-
         if let Some(ref mut recipe) = self.recipe {
             for step_config in config_steps.into_iter() {
-                let mut step_index = recipe.borrow().get_step_index(&step_config.ref_step)
-                    .expect(&format!("Step '{}' doesn't exist in the recipe", &step_config.ref_step));
+                let mut step_index = recipe
+                    .borrow()
+                    .get_step_index(&step_config.ref_step)
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "Step '{}' doesn't exist in the recipe",
+                            &step_config.ref_step
+                        )
+                    });
 
-                if let After = step_config.position { step_index += 1 };
-                recipe.borrow_mut().steps.insert(step_index, Box::new(RawCmdStep::from(step_config)));
-            };
+                if let After = step_config.position {
+                    step_index += 1
+                };
+                recipe
+                    .borrow_mut()
+                    .steps
+                    .insert(step_index, Box::new(RawCmdStep::from(step_config)));
+            }
         }
         self
     }
@@ -108,12 +120,21 @@ impl RecipeBuilder {
     ///Add step after another
     ///
     ///panics if step is not found in the inner vector
-    pub fn with_step_after<T: 'static +  Step>(&mut self, subject_name: &str, extra_step: T) -> &mut Self {
+    pub fn with_step_after<T: 'static + Step>(
+        &mut self,
+        subject_name: &str,
+        extra_step: T,
+    ) -> &mut Self {
         if let Some(ref mut recipe) = self.recipe {
-            let step_index = recipe.borrow().get_step_index(subject_name)
-                .expect(&format!("Step '{}' doesn't exist in the recipe", subject_name));
+            let step_index = recipe
+                .borrow()
+                .get_step_index(subject_name)
+                .unwrap_or_else(|| panic!("Step '{}' doesn't exist in the recipe", subject_name));
 
-            recipe.borrow_mut().steps.insert(step_index + 1, Box::new(extra_step));
+            recipe
+                .borrow_mut()
+                .steps
+                .insert(step_index + 1, Box::new(extra_step));
         }
 
         self
@@ -122,12 +143,21 @@ impl RecipeBuilder {
     ///Add step before another
     ///
     ///panics if step is not found in the inner vector
-    pub fn with_step_before<T: 'static +  Step>(&mut self, subject_name: &str, extra_step: T) -> &mut Self {
+    pub fn with_step_before<T: 'static + Step>(
+        &mut self,
+        subject_name: &str,
+        extra_step: T,
+    ) -> &mut Self {
         if let Some(ref mut recipe) = self.recipe {
-            let step_index = recipe.borrow().get_step_index(subject_name)
-                .expect(&format!("Step '{}' doesn't exist in the recipe", subject_name));
+            let step_index = recipe
+                .borrow()
+                .get_step_index(subject_name)
+                .unwrap_or_else(|| panic!("Step '{}' doesn't exist in the recipe", subject_name));
 
-            recipe.borrow_mut().steps.insert(step_index, Box::new(extra_step));
+            recipe
+                .borrow_mut()
+                .steps
+                .insert(step_index, Box::new(extra_step));
         }
 
         self

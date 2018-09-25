@@ -12,7 +12,7 @@ pub enum StepConfigError {
     AmbiguousPosition,
     //The position field is missing from the configuration.
     MissingPosition,
-    IoError
+    IoError,
 }
 
 impl fmt::Display for StepConfigError {
