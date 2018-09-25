@@ -2,6 +2,14 @@
 name = "trappo"
 version = "0.1.0"
 authors = ["Diego Cabrejas <dcabrejas@protonmail.com>"]
+license = "GPLv3"
+description = "Fast and convenient remote server automation and deployment tool"
+readme = "README.md"
+documentation = "http://trappo.tk"
+homepage = "http://trappo.tk"
+repository = "https://github.com/dcabrejas/trappo"
+keywords = ["deploy", "deployment", "tool", "automation"]
+categories = ["deployment"]
 
 [dependencies]
 toml_edit = "0.1.2"
