@@ -3,10 +3,10 @@ extern crate trappo;
 extern crate serde_derive;
 extern crate docopt;
 
-use trappo::recipe::{Recipe, deployer::*};
 use docopt::Docopt;
+use trappo::recipe::{deployer::*, Recipe};
 
-const USAGE: &'static str = "
+const USAGE: &str = "
     trappo
 
     Usage:
@@ -28,11 +28,17 @@ struct Args {
 }
 
 fn main() {
-    let args: Args = Docopt::new(USAGE).and_then(|d| d.deserialize()).unwrap_or_else(|e| e.exit());
-    let opt = if args.cmd_deploy { trappo::Operation::Deploy } else { trappo::Operation::Rollback };
+    let args: Args = Docopt::new(USAGE)
+        .and_then(|d| d.deserialize())
+        .unwrap_or_else(|e| e.exit());
+    let opt = if args.cmd_deploy {
+        trappo::Operation::Deploy
+    } else {
+        trappo::Operation::Rollback
+    };
 
     let stage_context = trappo::init_stage_context(".trappo/config.toml", &args.arg_stage, opt);
-    let config_steps  = trappo::init_steps_from_config(".trappo/steps.toml", &args.arg_stage);
+    let config_steps = trappo::init_steps_from_config(".trappo/steps.toml", &args.arg_stage);
 
     let recipe = Recipe::build()
         .name("Main Recipe")
