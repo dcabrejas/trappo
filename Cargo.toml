@@ -2,7 +2,7 @@
 name = "trappo"
 version = "0.1.0"
 authors = ["Diego Cabrejas <dcabrejas@protonmail.com>"]
-license = "GPLv3"
+license = "GPL-3.0-only"
 description = "Fast and convenient remote server automation and deployment tool"
 readme = "README.md"
 documentation = "http://trappo.tk"
