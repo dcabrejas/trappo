@@ -3,7 +3,7 @@ name: Trappo Deployment Tool
 
 project:
     version: 0.1.0
-    download_url: https://github.com/dcabrejas/deploy-rs
+    download_url: https://github.com/dcabrejas/trappo
 
 license:
     software: GPLv3 License
@@ -12,12 +12,12 @@ license:
 links:
     header:
       - title: GitHub
-        url: https://github.com/dcabrejas/deploy-rs
+        url: https://github.com/dcabrejas/trappo
     footer:
       - title: GitHub
-        url: https://github.com/dcabrejas/deploy-rs
+        url: https://github.com/dcabrejas/trappo
       - title: Issues
-        url: https://github.com/dcabrejas/deploy-rs/issues?state=open
+        url: https://github.com/dcabrejas/trappo/issues?state=open
 
 ui:
     header:
@@ -28,7 +28,7 @@ ui:
 social:
     github:
         user: dcabrejas
-        repo: deploy-rs
+        repo: trappo
     twitter:
         enabled: false
         via:
@@ -38,9 +38,18 @@ social:
         enabled: false
         profileUrl:
 
-# Build settings
-markdown: kramdown
 exclude:
     - Gemfile
     - Gemfile.lock
 theme: jekyll-docs-theme
+
+markdown: redcarpet
+redcarpet:
+  extensions:
+    - no_intra_emphasis
+    - fenced_code_blocks
+    - autolink
+    - tables
+    - strikethrough
+    - superscript
+    - with_to_data
