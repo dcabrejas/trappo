@@ -6,7 +6,7 @@ Easily configure and tailor your deployment process to your needs.
 Easily deploy to any server or rollback with one command.  
 
 ## Documentation
-Check out the official documentation [here](https://www.trappo.tk)
+Check out the official documentation [here](https://github.com/dcabrejas/trappo/blob/master/docs/index.md)
 
 ## Contributions
 Although this project is already useful and can be used for production projects,
